@@ -2,34 +2,45 @@
 import collections
 
 
-# crypt_a = 'SPORT'
-# secret_a = 'LDXTW KXDTL NBSFX BFOII LNBHG ODDWN BWK'
-# crypt_b = 'SECRET'
-# secret_b = 'JHQSU XFXBQ'
 
-ALPHA = list('ABCDEFGHIJKLMNOPQRSTUVWXYZ')
+"""
+SOLUTION TO CHALLENGE:
+https://www.hackerrank.com/challenges/keyword-transposition-cipher
 
+TEST INPUT:
+2
+SPORT
+LDXTW KXDTL NBSFX BFOII LNBHG ODDWN BWK
+SECRET
+JHQSU XFXBQ
+"""
 class KeywordTranspositionCipher(object):
-    def __init__(self, crypts, secrets):
-        lines = []
-        for i, c in enumerate(crypts):
-            lines.append(self.dcrypt(c, secrets[i]))
-        self.display(lines)
+    ALPHA = list('ABCDEFGHIJKLMNOPQRSTUVWXYZ')
 
-    def dcrypt(self, c, s):
+    @classmethod
+    def run(cls, crypts, secrets):
+        lines = []
+        print crypts
+        for i, c in enumerate(crypts):
+            lines.append(cls.dcrypt(c, secrets[i]))
+        cls.display(lines)
+
+    @classmethod
+    def dcrypt(cls, c, s):
         s = s.split(' ')
-        c = self.create_dict(self.remove_redundant(c))
-        alpha_sub = self.get_sub_alpha(c)
+        c = cls.create_dict(cls.remove_redundant(c))
+        alpha_sub = cls.get_sub_alpha(c)
 
         words = []
         for w in s:
             word = ''
             for i,a in enumerate(w):
-                word += ALPHA[alpha_sub.index(a)]
+                word += KeywordTranspositionCipher.ALPHA[alpha_sub.index(a)]
             words.append(word)
         return words
 
-    def remove_redundant(self, inp):
+    @classmethod
+    def remove_redundant(cls, inp):
         o = []
         inp = list(inp)
         for i in inp:
@@ -37,7 +48,8 @@ class KeywordTranspositionCipher(object):
                 o.append(i)
         return o
 
-    def create_dict(self, c):
+    @classmethod
+    def create_dict(cls, c):
         key = collections.OrderedDict()
         n = 0
 
@@ -46,7 +58,7 @@ class KeywordTranspositionCipher(object):
         for a in c:
             key[a] = []
 
-        for a in ALPHA:
+        for a in KeywordTranspositionCipher.ALPHA:
             if a not in key.keys():
                 key[key.keys()[n]].append(a)
                 n += 1
@@ -54,7 +66,8 @@ class KeywordTranspositionCipher(object):
                 n = 0
         return key
 
-    def get_sub_alpha(self, c):
+    @classmethod
+    def get_sub_alpha(cls, c):
         keys = c.keys()
         keys.sort()
         reordered = ""
@@ -65,7 +78,8 @@ class KeywordTranspositionCipher(object):
                     reordered += k
         return reordered
 
-    def display(self, lines):
+    @classmethod
+    def display(cls, lines):
         for l in lines:
             print ' '.join(l)
 
@@ -77,4 +91,5 @@ if __name__ == '__main__':
     for i in range(n):
         crypts.append(raw_input())
         secrets.append(raw_input())
-    ktc = KeywordTranspositionCipher(crypts, secrets)
+    KeywordTranspositionCipher(crypts, secrets)
+
