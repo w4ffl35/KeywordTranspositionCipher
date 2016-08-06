@@ -20,10 +20,9 @@ class KeywordTranspositionCipher(object):
     @classmethod
     def run(cls, crypts, secrets):
         lines = []
-        print crypts
         for i, c in enumerate(crypts):
             lines.append(cls.dcrypt(c, secrets[i]))
-        cls.display(lines)
+        return lines
 
     @classmethod
     def dcrypt(cls, c, s):
@@ -78,11 +77,6 @@ class KeywordTranspositionCipher(object):
                     reordered += k
         return reordered
 
-    @classmethod
-    def display(cls, lines):
-        for l in lines:
-            print ' '.join(l)
-
 
 if __name__ == '__main__':
     n = int(raw_input())
@@ -91,5 +85,7 @@ if __name__ == '__main__':
     for i in range(n):
         crypts.append(raw_input())
         secrets.append(raw_input())
-    KeywordTranspositionCipher(crypts, secrets)
+    lines = KeywordTranspositionCipher.run(crypts, secrets)
+    for l in lines:
+        print ' '.join(l)
 
