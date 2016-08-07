@@ -34,11 +34,7 @@ class KeywordTranspositionCipher(object):
     @classmethod
     def dcrypt(cls, key, secrets):
         alpha_sub = cls.get_sub_alpha(
-            cls.create_dict(
-                cls.remove_redundant(
-                    key
-                )
-            )
+            cls.create_dict(cls.remove_redundant(key))
         )
         cls.NEW_ALPHA = alpha_sub
 
