@@ -28,7 +28,6 @@ class KeywordTranspositionCipher(object):
         lines = []
         for secrets in secret_sets:
             for key in keys:
-                # lines.append(cls.dcrypt(key, secrets))
                 lines.append(cls.dcrypt(key, secrets))
         return lines
 
