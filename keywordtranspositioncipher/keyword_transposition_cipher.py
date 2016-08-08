@@ -26,9 +26,9 @@ class KeywordTranspositionCipher(object):
             cls.NEW_ALPHA = new_alpha
 
         lines = []
-        for secrets in secret_sets:
-            for key in keys:
-                lines.append(cls.dcrypt(key, secrets))
+        for i, secrets in enumerate(secret_sets):
+            key = keys[i]
+            lines.append(cls.dcrypt(key, secrets))
         return lines
 
     @classmethod
