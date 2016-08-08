@@ -2,13 +2,14 @@
 
 
 import unittest
-from keyword_transposition_cipher import KeywordTranspositionCipher
+from keywordtranspositioncipher.keyword_transposition_cipher import KeywordTranspositionCipher
 
 
 class KeywordTranspositionCipherTest(unittest.TestCase):
     KEY = ['SECRET']
     SECRET_SETS = [['JHQSU', 'XFXBQ']]
-    ANSWERS = [['CRYPT', 'OLOGY']]
+    # ANSWERS = [['CRYPT', 'OLOGY']]
+    ANSWERS = [['LDXTW', 'KXDTL', 'NBSFX', 'BFOII', 'LNBHG', 'ODDWN', 'BWK']]
     NEW_ALPHA = 'CDJOWEBINVRFKPXSAHMUZTGLQY'
 
     def test_remove_redundant(self):
