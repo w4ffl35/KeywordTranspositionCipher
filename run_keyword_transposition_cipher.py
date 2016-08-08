@@ -10,5 +10,6 @@ if __name__ == '__main__':
         crypts.append(raw_input())
         secrets.append(raw_input().split(' '))
     lines = KeywordTranspositionCipher.run(crypts, secrets)
+
     for l in lines:
         print ' '.join(l)
