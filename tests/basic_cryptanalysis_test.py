@@ -1,5 +1,9 @@
 #!/usr/bin/env python
+import os
+import sys
 import unittest
+HERE = os.path.dirname(os.path.realpath(__file__))
+sys.path.append(os.path.join(HERE, '..', '.'))
 from basiccryptanalysis.basic_cryptanalysis import BasicCryptanalysis
 
 
