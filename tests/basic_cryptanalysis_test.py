@@ -10,13 +10,21 @@ from basiccryptanalysis.basic_cryptanalysis import BasicCryptanalysis
 class BasicCryptanalysisTest(unittest.TestCase):
     def test_decrypt(self):
         lines = BasicCryptanalysis.run(
-            ['SPORT'],
-            ['LDXTW KXDTL NBSFX BFOII LNBHG ODDWN BWK']
+            [
+                'SPORT',
+                'SECRET'
+            ],
+            [
+                ['LDXTW KXDTL NBSFX BFOII LNBHG ODDWN BWK'],
+                ['JHQSU XFXBQ']
+            ]
         )
 
         self.assertEqual(
-            lines[0],
-            ['ILOVE', 'SOLVI', 'NGPRO', 'GRAMM', 'INGCH', 'ALLEN', 'GES']
+            lines[0], [
+                ['ILOVE', 'SOLVI', 'NGPRO', 'GRAMM', 'INGCH', 'ALLEN', 'GES'],
+                ['CRYPT', 'OLOGY']
+            ]
         )
 
 
