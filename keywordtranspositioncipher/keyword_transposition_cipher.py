@@ -25,16 +25,18 @@ class KeywordTranspositionCipher(object):
         if new_alpha:
             cls.NEW_ALPHA = new_alpha
 
-        lines = []
+        lines = {}
         for i, secrets in enumerate(secret_sets):
-            key = keys[i]
-            lines.append(cls.dcrypt(key, secrets))
+            for key in keys:
+                lines[key] = cls.decipher(key, secrets)
         return lines
 
     @classmethod
-    def dcrypt(cls, key, secrets):
+    def decipher(cls, key, secrets):
         alpha_sub = cls.get_sub_alpha(
-            cls.create_dict(cls.remove_redundant(key))
+            cls.create_dict(
+                cls.remove_redundant(key)
+            )
         )
         cls.NEW_ALPHA = alpha_sub
 
@@ -42,13 +44,17 @@ class KeywordTranspositionCipher(object):
         for i, secret in enumerate(secrets):
             word = ''
             for a, alpha in enumerate(secret):
-                cls.ALPHA.index(alpha)
                 cls._ALPHA[cls.ALPHA.index(alpha)]
                 word += cls._ALPHA[cls.NEW_ALPHA.index(alpha)]
             answers[i] = word
         cls.ANSWERS = answers
 
         return answers
+
+    @classmethod
+    def encipher(cls, secrets):
+        # TODO: implement this
+        pass
 
     @classmethod
     def remove_redundant(cls, inp):

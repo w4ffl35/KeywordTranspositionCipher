@@ -10,7 +10,7 @@ from keywordtranspositioncipher.keyword_transposition_cipher import KeywordTrans
 class KeywordTranspositionCipherTest(unittest.TestCase):
     KEY = ['SECRET']
     SECRET_SETS = [['JHQSU', 'XFXBQ']]
-    ANSWERS = [['CRYPT', 'OLOGY']]
+    ANSWERS = {'SECRET': ['CRYPT', 'OLOGY']}
     # ANSWERS = [['LDXTW', 'KXDTL', 'NBSFX', 'BFOII', 'LNBHG', 'ODDWN', 'BWK']]
     NEW_ALPHA = 'CDJOWEBINVRFKPXSAHMUZTGLQY'
 
