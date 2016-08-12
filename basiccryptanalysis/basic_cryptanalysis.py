@@ -99,6 +99,8 @@ class BasicCryptanalysis(object):
             len(self.prepared_answers[0])
         )
 
+
+
     def first_pass_match(self):
         for secret_set in self.prepared_secrets:
             for i, secret in enumerate(secret_set):
@@ -115,11 +117,9 @@ class BasicCryptanalysis(object):
         letters = {}
         for n in ALPHABET:
             self.crypt_alpha[n] = '*'
-        print 'DEFINITE MATCHES:'
         for uw in self.unique_words:
             if len(self.matches[uw]) == 1:
                 self.total_matches += 1
-                print 'MATCH: %s %s' % (uw, self.matches[uw][0])
 
                 for a, l in enumerate(self.matches[uw][0]):
                     # if uw[a] not in letters:
@@ -132,9 +132,6 @@ class BasicCryptanalysis(object):
         # create string alphabet
         for a in self.crypt_alpha:
             self.alpha_str += self.crypt_alpha[a]
-        print self.alpha_str
-        print ALPHABET
-        print
 
     """
     Iterate over matches with multiple answers and determine
@@ -163,7 +160,6 @@ class BasicCryptanalysis(object):
 
                     if matched:
                         self.total_matches += 1
-                        print 'MATCHED: %s %s %s' % (uw, new_word, match)
                         # pass
                     else:
                         # print 'MATCHED: %s %s %s' % (uw, new_word, match)
