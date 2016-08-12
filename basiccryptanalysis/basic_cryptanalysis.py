@@ -45,7 +45,6 @@ class BasicCryptanalysis(object):
         self.total_matches = 0
         self.alpha_str = ''
         self.crypt_alpha = collections.OrderedDict()
-        self.used_words = []
         self.matches = collections.OrderedDict()
         self.certinty_threshold = kwargs.get('certinty_threshold', 0.99)
 
@@ -87,11 +86,13 @@ class BasicCryptanalysis(object):
         newk = ''
         pairs = []
 
-        self.first_pass_match()
-        self.unique_words = list(set(self.used_words))
-        self.build_alphabet()
+        used_words = self.first_pass_match()
+
+        words = list(set(used_words))
+
+        self.build_alphabet(words)
         self.build_alphabet_string()
-        self.second_pass_match()
+        self.second_pass_match(words)
 
         print self.crypt_alpha
         print '%s out of %s' % (
@@ -102,6 +103,7 @@ class BasicCryptanalysis(object):
 
 
     def first_pass_match(self):
+        used_words = []
         for secret_set in self.prepared_secrets:
             for i, secret in enumerate(secret_set):
                 for word in self.prepared_dictionary:
@@ -110,14 +112,15 @@ class BasicCryptanalysis(object):
                             if secret not in self.matches.keys():
                                 self.matches[secret] = []
                             self.matches[secret].append(word)
-                            self.used_words.append(secret)
+                            used_words.append(secret)
+        return used_words
 
-    def build_alphabet(self):
+    def build_alphabet(self, words):
         # iterate over matches and build alphabet
         letters = {}
         for n in ALPHABET:
             self.crypt_alpha[n] = '*'
-        for uw in self.unique_words:
+        for uw in words:
             if len(self.matches[uw]) == 1:
                 self.total_matches += 1
 
@@ -137,9 +140,9 @@ class BasicCryptanalysis(object):
     Iterate over matches with multiple answers and determine
     correct answer using new alphabet.
     """
-    def second_pass_match(self):
+    def second_pass_match(self, words):
         unmatched_words = []
-        for uw in self.unique_words:
+        for uw in words:
             if len(self.matches[uw]) > 1:
                 for match in self.matches[uw]:
                     missing_letters = False
