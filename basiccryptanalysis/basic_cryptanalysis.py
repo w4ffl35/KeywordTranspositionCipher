@@ -34,16 +34,16 @@ class Letter(object):
 class BasicCryptanalysis(object):
 
     def __init__(self, **kwargs):
-        self.PASS = 0
+        self.total_matches = 0
         self.results = collections.OrderedDict()
         self.used_keys = []
+        self.letter_roughness = 0.0
+        self.alpha_str = ''
+
         self.prepare_secrets()
         self.prepare_answers()
         self.prepare_dictionary()
-        # self.frequency_analysis()
-        self.letter_roughness = 0.0
-        self.total_matches = 0
-        self.alpha_str = ''
+
         self.crypt_alpha = collections.OrderedDict()
         self.matches = collections.OrderedDict()
         self.certinty_threshold = kwargs.get('certinty_threshold', 0.99)
@@ -71,14 +71,6 @@ class BasicCryptanalysis(object):
         with open(os.path.join(HERE, 'dictionary.lst')) as f:
             lines = f.readlines()
         self.prepared_dictionary = [l.upper().strip() for l in lines]
-
-    def get_letter_frequency_in_word(self, word, letter):
-        total_count = len(word)
-        freq = 0
-        for l in word:
-            if l == letter:
-                freq += 1
-        return freq / total_count
 
     def run(self):
         running = True
@@ -211,6 +203,14 @@ class BasicCryptanalysis(object):
             if freq_crypt == freq_plaintext:
                 certinty += n
         return round(certinty, 2)
+
+    def get_letter_frequency_in_word(self, word, letter):
+        total_count = len(word)
+        freq = 0
+        for l in word:
+            if l == letter:
+                freq += 1
+        return freq / total_count
 
     """
     Fill in the gaps of deciphered text by assigning letters
