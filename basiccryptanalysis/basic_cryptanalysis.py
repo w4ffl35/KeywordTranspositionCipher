@@ -34,18 +34,21 @@ class Letter(object):
 class BasicCryptanalysis(object):
 
     def __init__(self, **kwargs):
-        self.total_matches = 0
         self.results = collections.OrderedDict()
         self.used_keys = []
         self.letter_roughness = 0.0
-        self.alpha_str = ''
 
         self.prepare_secrets()
         self.prepare_answers()
         self.prepare_dictionary()
 
         self.crypt_alpha = collections.OrderedDict()
+        for a in ALPHABET:
+            self.crypt_alpha[a] = '*'
+
         self.matches = collections.OrderedDict()
+        for secret in self.prepared_secrets[0]:
+            self.matches[secret] = []
         self.certinty_threshold = kwargs.get('certinty_threshold', 0.99)
 
     def prepare_secrets(self):
@@ -78,53 +81,62 @@ class BasicCryptanalysis(object):
         newk = ''
         pairs = []
 
-        used_words = self.first_pass_match()
-
-        words = list(set(used_words))
-
-        self.build_alphabet(words)
-        self.build_alphabet_string()
-        self.second_pass_match(words)
-
-        print self.crypt_alpha
-        print '%s out of %s' % (
-            self.total_matches,
-            len(self.prepared_answers[0])
+        # self.second_pass_match(
+        # self.second_pass_match(
+            # list(set(
+        self.second_pass_match(
+            list(set(
+                self.first_pass_match()
+            ))
         )
+            # ))
+        # )
 
-
+        matched = []
+        matched_crypted = []
+        for i,v in enumerate(self.matches):
+            matched.append(self.matches[v][0])
+            matched_crypted.append(v)
+        decrypted = ' '.join(matched)
+        encrypted = ' '.join(self.prepared_answers[0])
+        if decrypted == encrypted:
+            print decrypted.lower()
 
     def first_pass_match(self):
-        used_words = []
+        used_secrets = []
         for secret_set in self.prepared_secrets:
             for i, secret in enumerate(secret_set):
                 for word in self.prepared_dictionary:
                     if len(secret) == len(word):
                         if self.certinty(secret, word) >= self.certinty_threshold:
-                            if secret not in self.matches.keys():
-                                self.matches[secret] = []
                             self.matches[secret].append(word)
-                            used_words.append(secret)
-        return used_words
+                            used_secrets.append(secret)
+        self.build_alphabet(used_secrets)
+        return used_secrets
+
+    def assign_crypt_alpha(self, key, val):
+        # check if val already in crypt alpha
+        matched = False
+
+        for k,v in enumerate(self.crypt_alpha):
+            if self.crypt_alpha[v] != '*' and self.crypt_alpha[v] == val:
+                matched = True
+
+        if not matched:
+            self.crypt_alpha[key] = val
 
     def build_alphabet(self, words):
         # iterate over matches and build alphabet
-        letters = {}
-        for n in ALPHABET:
-            self.crypt_alpha[n] = '*'
         for uw in words:
             if len(self.matches[uw]) == 1:
-                self.total_matches += 1
-
                 for a, l in enumerate(self.matches[uw][0]):
-                    # if uw[a] not in letters:
-                    #     letters[uw[a]] = []
-                    # letters[uw[a]].append(l)
                     i = ALPHABET.index(l)
-                    self.crypt_alpha[l] = uw[a]
+                    self.assign_crypt_alpha(l, uw[a])
+        self.build_alphabet_string()
 
     def build_alphabet_string(self):
         # create string alphabet
+        self.alpha_str = ''
         for a in self.crypt_alpha:
             self.alpha_str += self.crypt_alpha[a]
 
@@ -132,35 +144,27 @@ class BasicCryptanalysis(object):
     Iterate over matches with multiple answers and determine
     correct answer using new alphabet.
     """
-    def second_pass_match(self, words):
+    def second_pass_match(self, secrets):
         unmatched_words = []
-        for uw in words:
-            if len(self.matches[uw]) > 1:
-                for match in self.matches[uw]:
+        matched_crypts = []
+        for secret in secrets:
+            if len(self.matches[secret]) > 1:
+                matched_words = []
+                matched_crypt = []
+                for match in self.matches[secret]:
                     missing_letters = False
 
-                    new_word = self.get_new_word(uw, match)
-
-                    matched = False
+                    new_word = self.get_new_word(secret, match)
                     if new_word == match:
-                        matched = True
+                        matched_crypt.append(secret)
+                        # if self.certinty(secret, match) >= self.certinty_threshold:
+                        matched_words.append(match)
 
-                        # this deciphered text has uncovered new letters
-                        # record these to the self.crypt_alpha
-                        # if new_word_2 == match:
-                        #     print new_letters
-                        #     for k,v in new_letters.iteritems():
-                        #         self.crypt_alpha[k] = v
+                if len(matched_words) == 1:
+                    self.build_alphabet(matched_crypt)
 
-
-                    if matched:
-                        self.total_matches += 1
-                        # pass
-                    else:
-                        # print 'MATCHED: %s %s %s' % (uw, new_word, match)
-                        # print '%s %s %s' % (uw, new_word, match)
-                        # unmatched_words.append(uw)
-                        pass
+                self.matches[secret] = matched_words
+        return matched_crypts
 
     def get_new_word(self, uw, match):
         missing_letters = False
