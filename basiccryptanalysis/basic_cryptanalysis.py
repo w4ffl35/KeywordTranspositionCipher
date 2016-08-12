@@ -32,7 +32,8 @@ class Letter(object):
         self.letter = letter
 
 class BasicCryptanalysis(object):
-    def __init__(self):
+
+    def __init__(self, **kwargs):
         self.PASS = 0
         self.results = collections.OrderedDict()
         self.used_keys = []
@@ -41,6 +42,12 @@ class BasicCryptanalysis(object):
         self.prepare_dictionary()
         # self.frequency_analysis()
         self.letter_roughness = 0.0
+        self.total_matches = 0
+        self.alpha_str = ''
+        self.crypt_alpha = collections.OrderedDict()
+        self.used_words = []
+        self.matches = collections.OrderedDict()
+        self.certinty_threshold = kwargs.get('certinty_threshold', 0.99)
 
     def prepare_secrets(self):
         secrets = 'lhpohes gvjhe ztytwojmmtel lgsfcgver segpsltjyl vftstelc djfl rml catrroel jscvjqjyfo mjlesl lcjmmfqe egvj gsfyhtyq sjfgver csfaotyq lfxtyq gjywplesl lxljm dxcel mpyctyq ztytwojmmtelel mfcgv spres mjm psgvty bfml ofle mjlc dtc tygfycfctjy dfsyl zpygvel csfao yealqsjpml atyl lgsjql qyfsotelc fseyf ojllel gjzmselltyq wpyhtelc zpltgl weygel afyher rstnesl aefleo rtyhes mvflel yphe rstnes qojder dtwwer lojml mfcgvel reocfl djzder djpygtyq gstmmoeafsel reg cpdel qspyqe mflctel csflvtyq vfcl avfghtyq vftsdfool mzer rsjye wjjol psol mplvtyq catrroe mvfqe lgseey leqzeycer wjseqsjpyrer lmjtoes msjwtoel docl djpyger cjpstlcl goefy gojddesl mjrl qjddoe gjy gpdtyql lyftotyq rjayojfr swgl vjle atrqec gjzmfgces frfl qotcgver gspzd zftodjzdl lyfsh'
@@ -66,45 +73,6 @@ class BasicCryptanalysis(object):
             lines = f.readlines()
         self.prepared_dictionary = [l.upper().strip() for l in lines]
 
-    # def frequency_analysis(self):
-    #     unique_letter_count = 0
-    #     total_letter_count = 0
-    #     letter_data = {}
-    #
-    #     for l in ALPHABET:
-    #         letter_data[l] = Letter(l)
-    #
-    #     for secrets in self.prepared_secrets:
-    #         for word in secrets:
-    #             for letter in word:
-    #                 if letter_data[letter].total_count == 0:
-    #                     unique_letter_count += 1
-    #                 letter_data[letter].total_count += 1
-    #                 total_letter_count += 1
-    #
-    #     self.set_letter_roughness(letter_data, unique_letter_count, total_letter_count)
-    #
-    # def set_letter_roughness(self, letter_data, unique_letter_count, total_letter_count):
-    #     # lower number == easier cipher
-    #     alpha_letter_count = len(ALPHABET)
-    #
-    #     avg_letter_distribution = total_letter_count / unique_letter_count
-    #     above_avg_letters = 0
-    #     for k,l in letter_data.items():
-    #         if l.total_count >= avg_letter_distribution:
-    #             above_avg_letters += 1
-    #
-    #     self.letter_roughness = above_avg_letters / alpha_letter_count
-
-    # def determine_longest_word(self, words):
-    #     longest_word = ''
-    #     longest_word_len = 0
-    #     for word in words:
-    #         if len(word) > longest_word_len:
-    #             longest_word_len = len(word)
-    #             longest_word = word
-    #     return longest_word
-
     def get_letter_frequency_in_word(self, word, letter):
         total_count = len(word)
         freq = 0
@@ -118,119 +86,83 @@ class BasicCryptanalysis(object):
         new_prepared_dict = self.prepared_dictionary
         newk = ''
         pairs = []
-        self.used_alpha = []
 
-        used_words = []
-        matches = collections.OrderedDict()
-        total_matches = 0
+        self.first_pass_match()
+        self.unique_words = list(set(self.used_words))
+        self.build_alphabet()
+        self.build_alphabet_string()
+        self.second_pass_match()
 
-        for i, secret in enumerate(self.prepared_secrets[0]):
-            for word in self.prepared_dictionary:
-                if len(secret) == len(word):
-                    same_word = float(0)
-                    # check frequency of letters in above words
-                    uniq_letters_crypt = []
-                    uniq_letters_plaintext = []
-                    n = 1 / len(secret)
-                    for i, l in enumerate(secret):
-                        if secret[i] not in uniq_letters_crypt:
-                            uniq_letters_crypt.append(secret[i])
+        print self.crypt_alpha
+        print '%s out of %s' % (
+            self.total_matches,
+            len(self.prepared_answers[0])
+        )
 
-                        if word[i] not in uniq_letters_plaintext:
-                            uniq_letters_plaintext.append(word[i])
+    def first_pass_match(self):
+        for secret_set in self.prepared_secrets:
+            for i, secret in enumerate(secret_set):
+                for word in self.prepared_dictionary:
+                    if len(secret) == len(word):
+                        if self.certinty(secret, word) >= self.certinty_threshold:
+                            if secret not in self.matches.keys():
+                                self.matches[secret] = []
+                            self.matches[secret].append(word)
+                            self.used_words.append(secret)
 
-                        freq_crypt = self.get_letter_frequency_in_word(
-                            word=secret, letter=secret[i]
-                        )
-                        freq_plaintext = self.get_letter_frequency_in_word(
-                            word=word, letter=word[i]
-                        )
-
-                        if freq_crypt == freq_plaintext:
-                            same_word += n
-
-                    y = round(same_word, 2)
-                    if y >= 0.99:
-                        if secret not in matches.keys():
-                            matches[secret] = []
-                        matches[secret].append(word)
-                        used_words.append(secret)
-
+    def build_alphabet(self):
         # iterate over matches and build alphabet
-        unique_words = list(set(used_words))
         letters = {}
-        crypt_alpha = collections.OrderedDict()
         for n in ALPHABET:
-            crypt_alpha[n] = '*'
+            self.crypt_alpha[n] = '*'
         print 'DEFINITE MATCHES:'
-        for uw in unique_words:
-            if len(matches[uw]) == 1:
-                total_matches += 1
-                print 'MATCH: %s %s' % (uw, matches[uw][0])
+        for uw in self.unique_words:
+            if len(self.matches[uw]) == 1:
+                self.total_matches += 1
+                print 'MATCH: %s %s' % (uw, self.matches[uw][0])
 
-                for a, l in enumerate(matches[uw][0]):
+                for a, l in enumerate(self.matches[uw][0]):
                     # if uw[a] not in letters:
                     #     letters[uw[a]] = []
                     # letters[uw[a]].append(l)
                     i = ALPHABET.index(l)
-                    crypt_alpha[l] = uw[a]
+                    self.crypt_alpha[l] = uw[a]
 
+    def build_alphabet_string(self):
         # create string alphabet
-        print
-        alpha_str = ''
-        for a in crypt_alpha:
-            alpha_str += crypt_alpha[a]
-        print alpha_str
+        for a in self.crypt_alpha:
+            self.alpha_str += self.crypt_alpha[a]
+        print self.alpha_str
         print ALPHABET
         print
 
-        # iterate over matches with multiple answers
-        # and determine correct answer using new alphabet
+    """
+    Iterate over matches with multiple answers and determine
+    correct answer using new alphabet.
+    """
+    def second_pass_match(self):
         unmatched_words = []
-        print 'SECOND PASS MATCH'
-        for uw in unique_words:
-            if len(matches[uw]) > 1:
-                for match in matches[uw]:
-                    matched = False
-                    new_word = ''
+        for uw in self.unique_words:
+            if len(self.matches[uw]) > 1:
+                for match in self.matches[uw]:
                     missing_letters = False
 
-                    for a,l in enumerate(uw):
-                        try:
-                            new_word += ALPHABET[alpha_str.index(l)]
-                        except ValueError:
-                            new_word += '*'
-                            missing_letters = True
+                    new_word = self.get_new_word(uw, match)
 
-                    # fill in the gaps of deciphered text by assigning letters
-                    # FROM potential match TO deciphered text
-                    # which were missing from deciphered text
-                    # and checking deciphered text against potential match
-                    new_word_2 = ''
-                    new_letters = {}
-                    if missing_letters:
-                        for n, a in enumerate(new_word):
-                            if crypt_alpha[match[n]] == '*':
-                                new_word_2 += match[n]
-                                new_letters[match[n]] = uw[n]
-                            else:
-                                new_word_2 += a
-
-                    new_word = new_word_2
-
+                    matched = False
                     if new_word == match:
                         matched = True
 
                         # this deciphered text has uncovered new letters
-                        # record these to the crypt_alpha
+                        # record these to the self.crypt_alpha
                         # if new_word_2 == match:
                         #     print new_letters
                         #     for k,v in new_letters.iteritems():
-                        #         crypt_alpha[k] = v
+                        #         self.crypt_alpha[k] = v
 
 
                     if matched:
-                        total_matches += 1
+                        self.total_matches += 1
                         print 'MATCHED: %s %s %s' % (uw, new_word, match)
                         # pass
                     else:
@@ -238,46 +170,62 @@ class BasicCryptanalysis(object):
                         # print '%s %s %s' % (uw, new_word, match)
                         # unmatched_words.append(uw)
                         pass
-        print total_matches
-        print len(self.prepared_answers[0])
-        print crypt_alpha
 
+    def get_new_word(self, uw, match):
+        missing_letters = False
+        new_word = ''
 
+        for a,l in enumerate(uw):
+            try:
+                new_word += ALPHABET[self.alpha_str.index(l)]
+            except ValueError:
+                new_word += '*'
+                missing_letters = True
 
-    # def decipher(self, key, pairs, new_prepared_dict, running, alpha=None):
-    #     lines = KeywordTranspositionCipher.run(
-    #         [key], self.prepared_secrets, alpha
-    #     )
-    #
-    #     old_prepared_dict = list(new_prepared_dict)
-    #     new_prepared_dict = []
-    #
-    #     if bool(set(lines) & set(self.prepared_answers)):
-    #         for l in lines:
-    #             if l in self.prepared_answers:
-    #                 i = lines.index(l)
-    #                 crypt = self.prepared_secrets[0][i]
-    #
-    #                 if crypt not in self.results.keys():
-    #                     self.results[crypt] = []
-    #
-    #                 p = (key, crypt, l)
-    #                 if p not in pairs:
-    #                     pairs.append(p)
-    #                     if crypt not in new_prepared_dict and crypt not in old_prepared_dict:
-    #                         new_prepared_dict.append(crypt)
-    #
-    #                     # track the results
-    #                     self.used_keys.append(key)
-    #                     self.results[crypt].append(l)
-    #                     self.used_alpha.append(KeywordTranspositionCipher.NEW_ALPHA)
-    #
-    #                     # print the match
-    #                     print "%s %s %s" % (
-    #                         crypt, l, key
-    #                     )
-    #                     print ':)'
-    #
-    #                     # do another pass
-    #                     running = True
-    #     return pairs, new_prepared_dict, running
+        if missing_letters:
+            new_word = self.identify_missing_letters(
+                new_word, match, uw
+            )
+
+        return new_word
+
+    def certinty(self, secret, word):
+        certinty = float(0)
+        # check frequency of letters in words
+        uniq_letters_crypt = []
+        uniq_letters_plaintext = []
+        n = 1 / len(secret)
+        for i, l in enumerate(secret):
+            if secret[i] not in uniq_letters_crypt:
+                uniq_letters_crypt.append(secret[i])
+
+            if word[i] not in uniq_letters_plaintext:
+                uniq_letters_plaintext.append(word[i])
+
+            freq_crypt = self.get_letter_frequency_in_word(
+                word=secret, letter=secret[i]
+            )
+            freq_plaintext = self.get_letter_frequency_in_word(
+                word=word, letter=word[i]
+            )
+
+            if freq_crypt == freq_plaintext:
+                certinty += n
+        return round(certinty, 2)
+
+    """
+    Fill in the gaps of deciphered text by assigning letters
+    FROM potential match TO deciphered text
+    which were missing from deciphered text
+    and checking deciphered text against potential match
+    """
+    def identify_missing_letters(self, word, match, uw):
+        new_word_2 = ''
+        # self.new_letters = {}
+        for n, a in enumerate(word):
+            if self.crypt_alpha[match[n]] == '*':
+                new_word_2 += match[n]
+                # new_letters[match[n]] = uw[n]
+            else:
+                new_word_2 += a
+        return new_word_2
