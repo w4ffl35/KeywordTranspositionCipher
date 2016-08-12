@@ -53,13 +53,13 @@ class BasicCryptanalysis(object):
 
     def prepare_secrets(self):
         secrets = 'lhpohes gvjhe ztytwojmmtel lgsfcgver segpsltjyl vftstelc djfl rml catrroel jscvjqjyfo mjlesl lcjmmfqe egvj gsfyhtyq sjfgver csfaotyq lfxtyq gjywplesl lxljm dxcel mpyctyq ztytwojmmtelel mfcgv spres mjm psgvty bfml ofle mjlc dtc tygfycfctjy dfsyl zpygvel csfao yealqsjpml atyl lgsjql qyfsotelc fseyf ojllel gjzmselltyq wpyhtelc zpltgl weygel afyher rstnesl aefleo rtyhes mvflel yphe rstnes qojder dtwwer lojml mfcgvel reocfl djzder djpygtyq gstmmoeafsel reg cpdel qspyqe mflctel csflvtyq vfcl avfghtyq vftsdfool mzer rsjye wjjol psol mplvtyq catrroe mvfqe lgseey leqzeycer wjseqsjpyrer lmjtoes msjwtoel docl djpyger cjpstlcl goefy gojddesl mjrl qjddoe gjy gpdtyql lyftotyq rjayojfr swgl vjle atrqec gjzmfgces frfl qotcgver gspzd zftodjzdl lyfsh'
-        secrets = 'l dxtw kxdtlnb sfxbfoiilnb hgoddwnbwk'
+        # secrets = 'l dxtw kxdtlnb sfxbfoiilnb hgoddwnbwk'
         # secrets = 'jhqsuxfxbq'
         self.prepared_secrets = self.prepare_words(secrets)
 
     def prepare_answers(self):
         answers = 'skulker choke minifloppies scratched recursions hairiest boas dps twiddles orthogonal posers stoppage echo cranking roached trawling saying confusers sysop bytes punting minifloppieses patch ruder pop urchin zaps lase post bit incantation barns munches trawl newsgroups wins scrogs gnarliest arena losses compressing funkiest musics fences wanked drivers weasel dinker phases nuke driver globed biffed slops patches deltas bombed bouncing cripplewares dec tubes grunge pasties trashing hats whacking hairballs pmed drone fools urls pushing twiddle phage screen segmented foregrounded spoiler profiles blts bounced tourists clean clobbers pods gobble con cubings snailing download rfcs hose widget compacter adas glitched crumb mailbombs snark'
-        answers = 'i love solving programming challenges'
+        # answers = 'i love solving programming challenges'
         # answers = 'cryptology'
         self.prepared_answers = self.prepare_words(answers)
 
@@ -92,16 +92,13 @@ class BasicCryptanalysis(object):
         for i,v in enumerate(self.matches):
             matched.append(self.matches[v][0])
             matched_crypted.append(v)
-        decrypted = ' '.join(matched)
-        answers = ' '.join(self.prepared_answers[0])
+        # decrypted = ' '.join(matched)
+        answers = ' '.join(self.prepared_answers[0]).strip()
 
-        decrypted = self.decipher_with_alphabet()
+        decrypted = self.decipher_with_alphabet().strip()
 
-        if decrypted == answers:
-            print decrypted.lower()
-        else:
-            print '*' * 10
-            print decrypted
+        print decrypted.lower()
+
 
     def decipher_with_alphabet(self):
         deciphered = ''
@@ -115,8 +112,6 @@ class BasicCryptanalysis(object):
             deciphered += ' '
         return deciphered
 
-
-
     def first_pass_match(self):
         used_secrets = []
         for secret_set in self.prepared_secrets:
@@ -127,7 +122,7 @@ class BasicCryptanalysis(object):
                             self.matches[secret].append(word)
                             used_secrets.append(secret)
         self.build_alphabet(used_secrets)
-        return used_secrets
+        return self.prepared_secrets[0]
 
     def assign_crypt_alpha(self, key, val):
         # check if val already in crypt alpha
@@ -166,20 +161,29 @@ class BasicCryptanalysis(object):
             if len(self.matches[secret]) > 1:
                 matched_words = []
                 matched_crypt = []
+                matched_word = None
                 for match in self.matches[secret]:
+
                     missing_letters = False
+                    if not matched_word:
+                        new_word = self.get_new_word(secret, match)
 
-                    new_word = self.get_new_word(secret, match)
-                    if new_word == match:
-                        if self.certinty(secret, match) >= self.certinty_threshold:
-                            matched_crypt.append(secret)
-                            matched_words.append(match)
+                        if new_word == match:
+                            matched_word = match
 
-                if len(matched_words) == 1:
-                    self.build_alphabet(matched_crypt)
+                    matched_crypt.append(secret)
+                    matched_words.append(match)
 
-                self.matches[secret] = matched_words
-        return matched_crypts
+                if new_word == matched_word:
+                    for i, a in enumerate(matched_word):
+                        if self.crypt_alpha[a] == '*':
+                            self.crypt_alpha[a] = secret[i]
+
+                    self.matches[secret] = [matched_word]
+                else:
+                    self.matches[secret] = matched_words
+                self.build_alphabet(matched_crypt)
+        return self.prepared_secrets[0]
 
     def get_new_word(self, uw, match):
         missing_letters = False
