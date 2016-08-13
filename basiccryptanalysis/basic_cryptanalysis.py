@@ -1,35 +1,31 @@
 #!/usr/bin/env python
-from __future__ import division
-import collections
-import os
-import math
-from keywordtranspositioncipher.keyword_transposition_cipher import KeywordTranspositionCipher
-
-
 """
 SOLUTION TO CHALLENGE:
 https://www.hackerrank.com/challenges/basic-cryptanalysis
-
-simple dictionary attack on a cipher
 
 TEST INPUT:
 STDIN:
 lhpohes gvjhe ztytwojmmtel lgsfcgver segpsltjyl vftstelc djfl rml catrroel jscvjqjyfo mjlesl lcjmmfqe egvj gsfyhtyq sjfgver csfaotyq lfxtyq gjywplesl lxljm dxcel mpyctyq ztytwojmmtelel mfcgv spres mjm psgvty bfml ofle mjlc dtc tygfycfctjy dfsyl zpygvel csfao yealqsjpml atyl lgsjql qyfsotelc fseyf ojllel gjzmselltyq wpyhtelc zpltgl weygel afyher rstnesl aefleo rtyhes mvflel yphe rstnes qojder dtwwer lojml mfcgvel reocfl djzder djpygtyq gstmmoeafsel reg cpdel qspyqe mflctel csflvtyq vfcl avfghtyq vftsdfool mzer rsjye wjjol psol mplvtyq catrroe mvfqe lgseey leqzeycer wjseqsjpyrer lmjtoes msjwtoel docl djpyger cjpstlcl goefy gojddesl mjrl qjddoe gjy gpdtyql lyftotyq rjayojfr swgl vjle atrqec gjzmfgces frfl qotcgver gspzd zftodjzdl lyfsh
 FILE:
 dictionary.lst
+alternate input:
+btnpufhz esxfh vyhvefz ufhez xsgfnafcfz umabtfz qz kmhmgsjfg ghndf tiufhzumbfz ahneez ydsdafhfzasdw uhnanbne pmdwefz lmeeumufhz oymgz tnuz kmdz vncfz pmdwfgz dmsxf ltmbq wmz zdmsez zmiz pszkfmayhf aydf zyd zumdwef vvzfz wnvvefz khfflmhf tmpzafhz bndz sdksdsasfz mpnfvmz athmztfz tmppfh tfcfz bivfhuydq gnldfg ghsxfh pmdwefh zuskki zlmv zunnksdw gfmgfh ahsxsme dyqfg kemw pmhwsdme byvsdwfg enzfhz uzfygn bhsuueflmhf bmebyemanhz gnldsdw pydwz uyzt xmc uydafg zbhffd gsf enzfh difalnhq kenlbtmhaz venbqfg ayvf vmhkz zbmw jfhnfz ggfg kemxnh vhnqf vmhkfg kemxnhz pyaafhfg tmppfhsdw byvfz befmdfg hnvyzafh kenngsdw vhfmqz zunsefhz knzzsez bhmindz yhe ufzzspmefg bhfasdz hmdgnpdfzz bhfmasndszpz zsenz jnhbtsdw bnnqsf bendf oyfzfz meaz zpnqf zuffgnpfafh ztmhflmhf
 """
+#!/usr/bin/env python
+
+from __future__ import division
+import collections
+import os
+import math
+
+
 HERE = os.path.dirname(os.path.realpath(__file__))
-COMMON_LETTERS = ['E', 'T', 'N', 'R', 'O', 'A', 'I', 'S']
-COMMON_DIGRAPH = ['TH', 'HE', 'EN', 'RE', 'ER']
-COMMON_TRIGRAPH = ['THE', 'ING', 'CON', 'ENT', 'ERE']
 ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
 
 class Letter(object):
-    total_count = 0
-    letter = ''
-
     def __init__(self, letter):
         self.letter = letter
+        self.total_count = 0
 
 class BasicCryptanalysis(object):
 
@@ -39,7 +35,6 @@ class BasicCryptanalysis(object):
         self.letter_roughness = 0.0
 
         self.prepare_secrets()
-        self.prepare_answers()
         self.prepare_dictionary()
 
         self.crypt_alpha = collections.OrderedDict()
@@ -52,23 +47,13 @@ class BasicCryptanalysis(object):
         self.certinty_threshold = kwargs.get('certinty_threshold', 0.99)
 
     def prepare_secrets(self):
-        secrets = 'lhpohes gvjhe ztytwojmmtel lgsfcgver segpsltjyl vftstelc djfl rml catrroel jscvjqjyfo mjlesl lcjmmfqe egvj gsfyhtyq sjfgver csfaotyq lfxtyq gjywplesl lxljm dxcel mpyctyq ztytwojmmtelel mfcgv spres mjm psgvty bfml ofle mjlc dtc tygfycfctjy dfsyl zpygvel csfao yealqsjpml atyl lgsjql qyfsotelc fseyf ojllel gjzmselltyq wpyhtelc zpltgl weygel afyher rstnesl aefleo rtyhes mvflel yphe rstnes qojder dtwwer lojml mfcgvel reocfl djzder djpygtyq gstmmoeafsel reg cpdel qspyqe mflctel csflvtyq vfcl avfghtyq vftsdfool mzer rsjye wjjol psol mplvtyq catrroe mvfqe lgseey leqzeycer wjseqsjpyrer lmjtoes msjwtoel docl djpyger cjpstlcl goefy gojddesl mjrl qjddoe gjy gpdtyql lyftotyq rjayojfr swgl vjle atrqec gjzmfgces frfl qotcgver gspzd zftodjzdl lyfsh'
-        # secrets = 'l dxtw kxdtlnb sfxbfoiilnb hgoddwnbwk'
-        # secrets = 'jhqsuxfxbq'
+        secrets = raw_input()
         self.prepared_secrets = self.prepare_words(secrets)
-
-    def prepare_answers(self):
-        answers = 'skulker choke minifloppies scratched recursions hairiest boas dps twiddles orthogonal posers stoppage echo cranking roached trawling saying confusers sysop bytes punting minifloppieses patch ruder pop urchin zaps lase post bit incantation barns munches trawl newsgroups wins scrogs gnarliest arena losses compressing funkiest musics fences wanked drivers weasel dinker phases nuke driver globed biffed slops patches deltas bombed bouncing cripplewares dec tubes grunge pasties trashing hats whacking hairballs pmed drone fools urls pushing twiddle phage screen segmented foregrounded spoiler profiles blts bounced tourists clean clobbers pods gobble con cubings snailing download rfcs hose widget compacter adas glitched crumb mailbombs snark'
-        # answers = 'i love solving programming challenges'
-        # answers = 'cryptology'
-        self.prepared_answers = self.prepare_words(answers)
 
     def prepare_words(self, words):
         n = 5
         words = words.upper().strip()
         return [words.split(' ')]
-        # words = words.replace(' ', '')
-        # return [[words[i:i+n] for i in range(0, len(words), n)]]
 
     def prepare_dictionary(self):
         with open(os.path.join(HERE, 'dictionary.lst')) as f:
@@ -90,14 +75,13 @@ class BasicCryptanalysis(object):
         matched = []
         matched_crypted = []
         for i,v in enumerate(self.matches):
-            matched.append(self.matches[v][0])
-            matched_crypted.append(v)
-        # decrypted = ' '.join(matched)
-        answers = ' '.join(self.prepared_answers[0]).strip()
+            if len(self.matches[v]) > 0:
+                matched.append(self.matches[v][0])
+                matched_crypted.append(v)
 
-        decrypted = self.decipher_with_alphabet().strip()
+        decrypted = self.decipher_with_alphabet().strip().lower()
 
-        print decrypted.lower()
+        print decrypted
 
 
     def decipher_with_alphabet(self):
@@ -155,13 +139,12 @@ class BasicCryptanalysis(object):
     correct answer using new alphabet.
     """
     def second_pass_match(self, secrets):
-        unmatched_words = []
-        matched_crypts = []
         for secret in secrets:
             if len(self.matches[secret]) > 1:
                 matched_words = []
                 matched_crypt = []
                 matched_word = None
+
                 for match in self.matches[secret]:
 
                     missing_letters = False
@@ -175,10 +158,6 @@ class BasicCryptanalysis(object):
                     matched_words.append(match)
 
                 if new_word == matched_word:
-                    for i, a in enumerate(matched_word):
-                        if self.crypt_alpha[a] == '*':
-                            self.crypt_alpha[a] = secret[i]
-
                     self.matches[secret] = [matched_word]
                 else:
                     self.matches[secret] = matched_words
@@ -243,11 +222,14 @@ class BasicCryptanalysis(object):
     """
     def identify_missing_letters(self, word, match, uw):
         new_word_2 = ''
-        # self.new_letters = {}
         for n, a in enumerate(word):
             if self.crypt_alpha[match[n]] == '*':
                 new_word_2 += match[n]
-                # new_letters[match[n]] = uw[n]
             else:
                 new_word_2 += a
         return new_word_2
+
+
+if __name__ == '__main__':
+    bc = BasicCryptanalysis()
+    bc.run()
