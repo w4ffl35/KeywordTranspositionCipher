@@ -14,8 +14,10 @@ LDXTW KXDTL NBSFX BFOII LNBHG ODDWN BWK
 SECRET
 JHQSU XFXBQ
 """
+
+
 class KeywordTranspositionCipher(object):
-    _ALPHA = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+    _ALPHA = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
     ALPHA = []
     NEW_ALPHA = None
 
@@ -33,28 +35,77 @@ class KeywordTranspositionCipher(object):
 
     @classmethod
     def decipher(cls, key, secrets):
-        alpha_sub = cls.get_sub_alpha(
-            cls.create_dict(
-                cls.remove_redundant(key)
-            )
-        )
+        # Ensure the working alphabet is initialized
+        if not cls.ALPHA:
+            cls.ALPHA = cls._ALPHA
+
+        # Normalize key and secrets to uppercase, filter non-alpha characters
+        if key is None:
+            key = ""
+        key = "".join([c for c in key.upper() if c.isalpha()])
+        if isinstance(secrets, (list, tuple)):
+            secrets = ["".join([c for c in s.upper() if c.isalpha()]) for s in secrets]
+        else:
+            secrets = ["".join([c for c in secrets.upper() if c.isalpha()])]
+
+        alpha_sub = cls.get_sub_alpha(cls.create_dict(cls.remove_redundant(key)))
         cls.NEW_ALPHA = alpha_sub
 
         answers = list(secrets)
         for i, secret in enumerate(secrets):
-            word = ''
+            word = ""
             for a, alpha in enumerate(secret):
-                cls._ALPHA[cls.ALPHA.index(alpha)]
-                word += cls._ALPHA[cls.NEW_ALPHA.index(alpha)]
+                # Looking up the index in NEW_ALPHA may raise ValueError; handle
+                # unknown letters gracefully by appending a placeholder.
+                alpha = alpha.upper()
+                if alpha not in cls.ALPHA:
+                    word += alpha
+                    continue
+                try:
+                    idx = cls.NEW_ALPHA.index(alpha)
+                    word += cls._ALPHA[idx]
+                except ValueError:
+                    # if letter not found in NEW_ALPHA try to append placeholder
+                    word += "*"
             answers[i] = word
         cls.ANSWERS = answers
 
         return answers
 
     @classmethod
-    def encipher(cls, secrets):
-        # TODO: implement this
-        pass
+    def encipher(cls, key, secrets):
+        # NOTE: encipher expects that the cls.NEW_ALPHA has already been set
+        # for the desired key (for backwards compatibility we keep the
+        # signature simple). This method will transform a list/tuple of
+        # plaintext words to their ciphertext forms using the currently set
+        # NEW_ALPHA.
+        # Normalize key and secrets and ensure ALPHA set
+        if not cls.ALPHA:
+            cls.ALPHA = cls._ALPHA
+        if key is None:
+            key = ""
+        key = "".join([c for c in key.upper() if c.isalpha()])
+        if isinstance(secrets, (list, tuple)):
+            secrets = ["".join([c for c in s.upper() if c.isalpha()]) for s in secrets]
+        else:
+            secrets = ["".join([c for c in secrets.upper() if c.isalpha()])]
+
+        # Compute the NEW_ALPHA based on the provided key
+        cls.NEW_ALPHA = cls.get_sub_alpha(cls.create_dict(cls.remove_redundant(key)))
+
+        answers = list(secrets)
+        for i, secret in enumerate(secrets):
+            word = ""
+            for alpha in secret:
+                alpha = alpha.upper()
+                if alpha in cls._ALPHA:
+                    idx = cls._ALPHA.index(alpha)
+                    word += cls.NEW_ALPHA[idx]
+                else:
+                    # keep unknown characters unchanged
+                    word += alpha
+            answers[i] = word
+        return answers
 
     @classmethod
     def remove_redundant(cls, inp):
@@ -87,7 +138,8 @@ class KeywordTranspositionCipher(object):
 
     @classmethod
     def get_sub_alpha(cls, c):
-        keys = c.keys()
+        # Convert keys view to list for Python 3 compatibility and sort
+        keys = list(c.keys())
         keys.sort()
         reordered = ""
         for a in keys:
