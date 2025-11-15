@@ -1,28 +1,42 @@
 #!/usr/bin/env python3
+"""
+Command-line interface for Keyword Transposition Cipher.
+
+Supports encryption/decryption with both interactive and piped input modes.
+"""
+
 import sys
 import argparse
+from typing import List, Tuple
 from keywordtranspositioncipher.keyword_transposition_cipher import (
     KeywordTranspositionCipher,
 )
 
 
-def parse_piped_input():
-    """Parse piped input expected in the CLI format:
-    n\nkey1\nsecret1\nkey2\nsecret2\n..."""
-    data = sys.stdin.read().splitlines()
-    data = [l for l in data if l and l.strip()]
-    if not data:
-        return []
-    try:
-        n = int(data[0].strip())
-    except ValueError:
-        # If first line isn't an int, try treating the input as a single pair
-        if len(data) >= 2:
-            return [(data[0].strip(), data[1].split())]
-        return []
-    pairs = []
-    # Safe-guard: ensure enough lines are available
-    available_pairs_lines = data[1 : 1 + 2 * n]
+def _parse_single_pair(data: List[str]) -> List[Tuple[str, List[str]]]:
+    """Parse input as single key-secret pair.
+
+    Args:
+        data: List of input lines
+
+    Returns:
+        List with single (key, secret) tuple or empty list
+    """
+    if len(data) >= 2:
+        return [(data[0].strip(), data[1].split())]
+    return []
+
+
+def _extract_pairs(available_pairs_lines: List[str]) -> List[Tuple[str, List[str]]]:
+    """Extract key-secret pairs from lines.
+
+    Args:
+        available_pairs_lines: List of lines containing pairs
+
+    Returns:
+        List of (key, secret_list) tuples
+    """
+    pairs: List[Tuple[str, List[str]]] = []
     for i in range(0, len(available_pairs_lines), 2):
         key = "".join(
             [c for c in available_pairs_lines[i].strip().upper() if c.isalpha()]
@@ -38,10 +52,42 @@ def parse_piped_input():
     return pairs
 
 
-def interactive_input():
+def parse_piped_input() -> List[Tuple[str, List[str]]]:
+    """Parse piped input expected in the CLI format.
+
+    Expected format:
+        n
+        key1
+        secret1
+        key2
+        secret2
+        ...
+
+    Returns:
+        List of (key, secret_list) tuples
+    """
+    data = sys.stdin.read().splitlines()
+    data = [l for l in data if l and l.strip()]
+    if not data:
+        return []
+    try:
+        n = int(data[0].strip())
+    except ValueError:
+        return _parse_single_pair(data)
+
+    available_pairs_lines = data[1 : 1 + 2 * n]
+    return _extract_pairs(available_pairs_lines)
+
+
+def interactive_input() -> List[Tuple[str, List[str]]]:
+    """Prompt user for interactive input.
+
+    Returns:
+        List of (key, secret_list) tuples
+    """
     print("Interactive mode detected. Follow the prompts below to enter data.")
     n = int(input("Number of key/secret pairs: "))
-    pairs = []
+    pairs: List[Tuple[str, List[str]]] = []
     for i in range(n):
         key = input(f"Key {i + 1}: ")
         key = "".join([c for c in key.strip().upper() if c.isalpha()])
@@ -95,7 +141,7 @@ if __name__ == "__main__":
             "".join([c for c in w.strip().upper() if c.isalpha()])
             for w in args.secret.split()
         ]
-        pairs = [(skey, ssecret)]
+        pairs: List[Tuple[str, List[str]]] = [(skey, ssecret)]
     else:
         # If running interactively (attached to a TTY) show prompts and help text.
         if sys.stdin.isatty():
