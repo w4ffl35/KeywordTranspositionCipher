@@ -124,3 +124,5 @@ See the repository `LICENSE` for details.
 - COMMON_LETTERS = ['E', 'T', 'N', 'R', 'O', 'A', 'I', 'S']
 - COMMON_DIGRAPH = ['TH', 'HE', 'EN', 'RE', 'ER']
 - COMMON_TRIGRAPH = ['THE', 'ING', 'CON', 'ENT', 'ERE']
+
+This code was originally written by `balthazarbux` which is also me (it is my old defunct account).
